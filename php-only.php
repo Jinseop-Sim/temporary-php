@@ -15,7 +15,8 @@
         }
         .flex_container{
             width: 300px;
-            margin-top: 10px;
+            height: 310px;
+            margin-top: 0px;
             display: flex;
             flex-direction: column;
             flex-wrap: wrap;
@@ -25,12 +26,14 @@
             width: 125px;
             height: 50px;
             border: 1px solid black;
+            background-color: white;
             text-align: center;
             font-size: 10px;
             line-height: 50px;
         }
         #each{
             border-radius: 10px;
+            border: solid 1px black;
             position: absolute;
             top: 5px; right: 5px;
             width: 20%;
@@ -55,30 +58,62 @@
                 die("<p>Could not open 201724500 Database!");
 
         if(isset($_POST["save"])){
+            $flag = true;
+
             if($name === ""){
                 echo "<script>alert('이름은 공백일 수 없습니다.')</script>";
-                die();
+                $flag = false;
             }
             if(!preg_match("/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/", $phone)){
                 echo "<script>alert('전화번호 형식이 옳지 않습니다!')</script>";
-                die();
+                $flag = false;
             }
         
-            $inQuery = "INSERT INTO info_table (name, phone, email, memo)"
-            . "VALUES ('$name', '$phone', '$email', '$memo')";
+            if($flag){
+                $inQuery = "INSERT INTO info_table (name, phone, email, memo)"
+                . "VALUES ('$name', '$phone', '$email', '$memo')";
 
-            if(!($result = mysqli_query($database, $inQuery))){
+                if(!($result = mysqli_query($database, $inQuery))){
+                    print("<p>Could not execute query!!</p>");
+                    die(mysqli_error($database));
+                }
+            }
+        }
+
+        if(isset($_POST['each'])){
+            $queryName = $_POST['each'];
+
+            $findUniQuery = "SELECT * FROM info_table WHERE name = '$queryName'";
+            if(!($uniResult = mysqli_query($database, $findUniQuery))){
+                print("<p>Could not execute query!!</p>");
+                die(mysqli_error($database));
+            }
+            $row = mysqli_fetch_assoc($uniResult);
+
+            $printName = $row['name'];
+            $printPhone = $row['phone'];
+            $printEmail = $row['email'] !== "" ? $row['email'] : "-";
+            $printMemo = $row['memo'] !== "" ? $row['memo'] : "-";
+
+            print("<div id = 'each'>" .
+            "$printName" . "<br>" . "$printPhone" . "<br>" . "$printEmail" . "<br>" . "$printMemo" .
+            "</div>");
+        }
+
+        if(isset($_POST['uniDelete'])){
+            $delQuery = "DELETE FROM info_table WHERE name = '$name'";
+            if(!($result = mysqli_query($database, $delQuery))){
                 print("<p>Could not execute query!!</p>");
                 die(mysqli_error($database));
             }
         }
 
-        if(isset($_POST['uniDelete'])){
-
-        }
-
         if(isset($_POST['allDelete'])){
-            
+            $allDelQuery = "DELETE FROM info_table";
+            if(!($result = mysqli_query($database, $allDelQuery))){
+                print("<p>Could not execute query!!</p>");
+                die(mysqli_error($database));
+            }
         }
 
         print("<form method = 'post' action='test2.php'>"
@@ -94,7 +129,6 @@
             .     "<input id = 'uniDelete' name = 'uniDelete' type ='submit' value='연락처 삭제'>"
             .     "<input id = 'allDelete' name = 'allDelete' type='submit' value='모두 삭제'></p>"
             . "</form>"
-            . "<div id = 'result' class = 'flex_container'></div>"
             . "<div id = 'pagination_btn'></div>"
             . "<div id = 'each'></div>");
         
@@ -104,12 +138,14 @@
             die(mysqli_error($database));
         }
 
+        print("<form class = 'flex_container' method = 'post' action = 'test2.php'>");
         while($row = mysqli_fetch_row($result)){
             foreach($row as $name => $value){
-                print("<div class = 'show_box' id = '" . $value . "' onclick = 'eachBook(id)'>"
-                    . $value . "</div>");
+                print("<input class = 'show_box' type = 'submit' name = 'each'"
+                . "id = '" . $value . "' value = '$value'>");
             }
         }
+        print("</form>");
 
         mysqli_close($database);
     ?>
