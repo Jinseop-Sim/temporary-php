@@ -1,234 +1,353 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2번 문제</title>
-    <style>
-        p{
-            margin: 0px;
-        }
-        label{
-            display: inline-block;
-            width: 80px;
-        }
-        .flex_container{
-            width: 300px;
-            height: 310px;
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            flex-wrap: wrap;
-        }
-        .show_box{
-            margin: 5px;
-            width: 125px;
-            height: 50px;
-            border: 1px solid black;
-            text-align: center;
-            font-size: 10px;
-            line-height: 50px;
-        }
-        #each{
-            border-radius: 10px;
-            position: absolute;
-            top: 5px; right: 5px;
-            width: 20%;
-            height: auto;
-            text-align: center;
-        }
-        #pagination_btn{
-            margin-left: 50px;
-        }
-    </style>
-    <script>
-        var infos;
+// 201724500 심진섭 Assignment
+<?php
+    ini_set('display_errors', 1);   // error message On
 
-        function loadBook(){
-            var length = localStorage.length;
-            var paginationBtn = document.getElementById("pagination_btn");
-            infos = [];
+    // Initialize variables
+    $mode = isset($_POST["mode"]) ? $_POST['mode'] : "select";
+    $totalCount = 0;
+    $err = "";
+    $flag = true;
 
-            if(length > 10){
-                paginationBtn.style.display = "block";
+    // Check and assignment POST parameters
+    $name = isset($_POST["txt_name"]) ? $_POST['txt_name'] : "";
+    $phone = isset($_POST["txt_tel"]) ? $_POST['txt_tel'] : "";
+    $email = isset($_POST["txt_email"]) ? $_POST['txt_email'] : "";
+    $memo = isset($_POST["txt_memo"]) ? $_POST['txt_memo'] : "";
 
-                var idx = (length - 1) / 10;
-                var mark = "";
+    // Connect to MySQL
+    if(!($database = mysqli_connect("localhost", "root", "123456", "201724500", "3307")))
+        die("<p>Could not connect to Database!</p>");
+    if(!(mysqli_select_db($database, "201724500")))
+        die("<p>Could not open 201724500 Database!");
 
-                for(var i = 1; i <= idx + 1 ; i++){
-                    mark += "<input type = 'button' id = '" + i + "' value = '" + i + "'" + 
-                    "style = 'margin-right: 2px; background-color: darkslateblue; color: white' onclick = 'go_next_page(id)'/>";
-                }
-
-                paginationBtn.innerHTML = mark;
-            }
-            else{
-                paginationBtn.style.display = "none";
-            }
-
-            if(length > 10) length = 10;
-        }
-
-        function eachBook(name){
-            var detail = document.getElementById("each");
-            var tag = JSON.parse(localStorage.getItem(name));
-
-            if(tag[1] === "") tag[1] = "-";
-            if(tag[2] === "") tag[2] = "-";
-
-            each.style.border = "1px solid black";
-            var markup = name + "<br>" + tag[0] + "<br>" + tag[1] + "<br>" + tag[2];
-            detail.innerHTML = markup;
-        }
-
-        function go_next_page(page){
-            var length = localStorage.length;
-            var maxLength = page * 10;
-
-            if(length < maxLength) maxLength = length;
-            var markup = "";
-
-            //for (var i = (page - 1) * 10; i < maxLength; i++) 
-            //{
-            //    markup += "<div class = 'show_box' id = '" + infos[i] + "' onclick = 'eachBook(id)'>"
-            //        + infos[i] + "</div>";
-            //}
-
-            //document.getElementById("result").innerHTML = markup;
-        }
-
-        function saveBook(){
-            <?php
-                $name = isset($_POST["name"]) ? $_POST['name'] : "";
-                $phone = isset($_POST["tel"]) ? $_POST['tel'] : "";
-                $email = isset($_POST["email"]) ? $_POST['email'] : "";
-                $memo = isset($_POST["memo"]) ? $_POST['memo'] : "";
-
-                if(!($database = mysqli_connect("localhost", "root", "123456", "201724500", "3307")))
-                    die("<p>Could not connect to Database!</p>");
-                if(!(mysqli_select_db($database, "201724500")))
-                    die("<p>Could not open 201724500 Database!");
-
-                if(isset($_POST["save"])){
-                    if($name === ""){
-                        echo "<script>alert('이름은 공백일 수 없습니다.')</script>";
-                        return;
-                    }
-                    if(!preg_match("/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/", $phone)){
-                        echo "<script>alert('전화번호 형식이 옳지 않습니다!')</script>";
-                        return;
-                    }
-        
-                    $inQuery = "INSERT INTO info_table (name, phone, email, memo)"
-                    . "VALUES ('$name', '$phone', '$email', '$memo')";
-
-                    if(!($result = mysqli_query($database, $inQuery))){
-                        print("<p>Could not execute query!!</p>");
-                        die(mysqli_error($database));
-                    }
-                }
-
-                mysqli_close($database);
-            ?>
-
-            loadBook();
-        }
-
-        function deleteBook(){
-            <?php
-            if(isset($_POST["uniDelete"])){
-                $name = $_POST["name"];
-
-                if(!($database = mysqli_connect("localhost", "root", "123456", "201724500", "3307")))
-                    die("<p>Could not connect to Database!</p>");
-                if(!(mysqli_select_db($database, "201724500")))
-                    die("<p>Could not open 201724500 Database!");
-
-                $delQuery = "DELETE FROM info_table WHERE name = '$name'";
-                if(!($result = mysqli_query($database, $delQuery))){
-                    print("<p>Could not execute query!!</p>");
-                    die(mysqli_error($database));
-                }
-
-                mysqli_close($database);
-            }
-            ?>
-
-            loadBook();
-        }
-
-        function clearBook(){
-            <?php
-            if(isset($_POST["allDelete"])){
-                if(!($database = mysqli_connect("localhost", "root", "123456", "201724500", "3307")))
-                    die("<p>Could not connect to Database!</p>");
-                if(!(mysqli_select_db($database, "201724500")))
-                    die("<p>Could not open 201724500 Database!");
-
-                $allDelQuery = "DELETE FROM info_table";
-                if(!($result = mysqli_query($database, $allDelQuery))){
-                    print("<p>Could not execute query!!</p>");
-                    die(mysqli_error($database));
-                }
-
-                mysqli_close($database);
-            }
-            ?>
-
-            loadBook();
-        }
-
-        function start(){
-            var saveButton = document.getElementById("save");
-            saveButton.addEventListener("click", saveBook, false);
-            var deleteButton = document.getElementById("uniDelete");
-            deleteButton.addEventListener("click", deleteBook, false);
-            var clearButton= document.getElementById("allDelete");
-            clearButton.addEventListener("click", clearBook, false);
-            loadBook();
-        }
-
-        window.addEventListener("load", start, false);
-    </script>
-</head>
-<body>
-    <form method = "post" action="test2.php">
-        <p><label for = "name">이름 : </label>
-            <input id = "name" name = "name" type="text"></p>
-        <p><label for = "tel">전화번호 : </label>
-            <input id = "tel" name = "tel" type="text"></p>
-        <p><label for = "email">이메일 : </label>
-            <input id = "email" name = "email" type="text"></p>
-        <p><label for = "memo">메모 : </label>
-            <input id = "memo" name = "memo" type="text"></p>
-        <p><input id = "save" name = "save" type="submit" value="연락처 저장">
-            <input id = "uniDelete" name = "uniDelete" type = "submit" value="연락처 삭제">
-            <input id = "allDelete" name = "allDelete" type = "submit" value="모두 삭제"></p>
-    </form>
-    <?php
-        if(!($database = mysqli_connect("localhost", "root", "123456", "201724500", "3307")))
-            die("<p>Could not connect to Database!</p>");
-        if(!(mysqli_select_db($database, "201724500")))
-            die("<p>Could not open 201724500 Database!");
-
-        $findQuery = "SELECT name FROM info_table";
-        if(!($result = mysqli_query($database, $findQuery))){
+    // Sql query processing according to mode
+    if ($mode == "insert")
+    {
+        $uniFindQuery = "SELECT name FROM info_table WHERE name='$name'";
+        if(!($result = mysqli_query($database, $uniFindQuery))){
             print("<p>Could not execute query!!</p>");
             die(mysqli_error($database));
         }
 
-        while($row = mysqli_fetch_row($result)){
-            foreach($row as $name => $value){
-                print("<div class = 'show_box' id = '" . $value . "' onclick = 'eachBook(id)'>"
-                    . $value . "</div>");
-            }
+        if(mysqli_num_rows($result) !== 0){
+            $err = "이미 있는 이름입니다!!";
+            $flag = false;
         }
 
-        mysqli_close($database);
-    ?>
+        if($flag){
+            $inQuery = "INSERT INTO info_table (name, tel, email, memo)"
+                    . "VALUES ('$name', '$phone', '$email', '$memo')";
 
-    <div id = "pagination_btn"></div>
-    <div id = "each"></div>
+            if(!($result = mysqli_query($database, $inQuery))){
+                print("<p>Could not execute query!!</p>");
+                die(mysqli_error($database));
+            }
+        }
+    }
+    else if ($mode == "delete")
+    {
+        $uniFindQuery = "SELECT name FROM info_table WHERE name='$name'";
+        if(!($result = mysqli_query($database, $uniFindQuery))){
+            print("<p>Could not execute query!!</p>");
+            die(mysqli_error($database));
+        }
+
+        if(mysqli_num_rows($result) === 0){
+            $err = "없는 이름 입니다!!";
+            $flag = false;
+        }
+
+        $delQuery = "DELETE FROM info_table WHERE name = '$name'";
+        if(!($result = mysqli_query($database, $delQuery))){
+            print("<p>Could not execute query!!</p>");
+            die(mysqli_error($database));
+        }
+    }
+    else if ($mode == "delete_all")
+    {
+        $allDelQuery = "DELETE FROM info_table";
+        if(!($result = mysqli_query($database, $allDelQuery))){
+            print("<p>Could not execute query!!</p>");
+            die(mysqli_error($database));
+        }
+    }
+    
+    // Execute select query
+    $select_sql = "SELECT * FROM info_table";
+    if(!($result = mysqli_query($database, $select_sql))){
+        print("<p>Could not execute query!!</p>");
+        die(mysqli_error($database));
+    }
+    $data_arr = array();
+    while($row = mysqli_fetch_assoc($result)){
+        $temp = array('name'=>$row['name'], 'tel'=>$row['tel'], 'email'=>$row['email'], 'memo'=>$row['memo']);
+        array_push($data_arr, $temp);
+    }
+    
+    mysqli_close($database);
+?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Example</title>
+    <style type="text/css">
+        #maindiv {
+            width: 300px;
+            float: left;
+        }
+        label {
+            display: inline-block;
+            width: 85px;
+        }
+        #div_btn {
+            margin: 5px 0px;
+        }
+        #contactContainer {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            width: 200px;
+            height: 250px;
+        }    
+        #contactContainer .contactBox {
+            text-align: center;
+            font-size: 5px;
+            border: 1px solid;
+            width: 80px;
+            height: 30px;
+            margin: 1px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        #div_fullInfo {
+            visibility: hidden;
+            float: left;
+            width: 200px;
+            border: 2px solid black;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #div_fullInfo span {
+            display: block;
+            font-size: 1.2em;
+        }
+        .pagination {
+            visibility: hidden;
+            display: inline-block;
+        }
+        .pagination div {
+            float: left;
+            padding: 8px 16px;
+        }
+        .pagination div.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .pagination div:hover:not(.active) {background-color: #ddd;}
+    </style>
+    <script type="text/javascript">
+        var contactArr = <?php echo json_encode($data_arr);?>;    // php 배열을 javascript 배열에 바로 대입하고 싶을 때는 json을 활용
+        var curPage = 0;
+
+        function makeAlert()    // php에서 생성한 에러 메시지를 경고창으로 띄워주는 함수
+        {
+            var err = "<?php echo $err;?>";
+            if (err.length > 0)
+            {
+                window.alert(err);
+                return;
+            }
+        }        
+        function addContact()
+        {
+            var name = document.getElementById("txt_name").value;
+            var tel = document.getElementById("txt_tel").value;
+            var email = document.getElementById("txt_email").value;
+            var memo = document.getElementById("txt_memo").value;
+
+            if (name == "" || tel == "")
+            {
+                window.alert("이름과 연락처는 꼭 입력해야 합니다.");
+                return;
+            }
+
+            // 이름 중복 체크는 php에서 수행
+            //if (findContact(document.getElementById("txt_name").value) >= 0)
+            //{
+            //    window.alert("이미 등록된 연락처입니다.");
+            //    return;
+            //}
+
+            //var contact = {name: name, tel: tel, email: email, memo: memo};
+            //contactArr.push(contact);
+            //contactArr.sort(compareName);
+
+            //document.forms[0].reset();
+            //makePages();
+            //showContacts();
+            //updateData();
+
+            document.getElementById("mode").value = "insert";
+            document.forms[0].submit();
+        }
+        function findContact(name)
+        {
+            for (var contactIdx in contactArr)
+            {
+                if (contactArr[contactIdx].name == name)
+                    return contactIdx;
+            }
+            return -1;
+        }
+        /*function compareName(contect1, contect2)
+        {
+            if (contect1.name > contect2.name)
+                return 1;
+            else if (contect1.name < contect2.name)
+                return -1;
+            else
+                return 0;
+        }*/
+        function delContact()
+        {
+            //var idx = findContact(document.getElementById("txt_name").value);
+            // 이름 체크는 php에서 수행
+            //if (idx < 0)
+            //{
+            //    window.alert("일치하는 이름을 가진 연락처가 없습니다.");
+            //    return;
+            //}
+            //contactArr.splice(idx, 1);
+            //makePages();
+            //showContacts();
+            //updateData();
+            if (document.getElementById("txt_name").value == "")
+            {
+                window.alert("제거할 연락처의 이름을 입력해주세요.");
+                return;
+            }
+            document.getElementById("mode").value = "delete";
+            document.forms[0].submit();
+        }
+        function clearAll()
+        {
+            //contactArr = Array();
+            //document.getElementById("contactContainer").innerHTML = "";
+            //document.getElementById("div_fullInfo").style.visibility = "hidden";
+            //makePages();
+            //updateData();
+            document.getElementById("mode").value = "delete_all";
+            document.forms[0].submit();
+        }
+        function showContacts()
+        {
+            var contactContainer = document.getElementById("contactContainer");
+            contactContainer.innerHTML = "";
+
+            var startIdx = curPage * 10;
+            var endIdx = startIdx + 9;
+            for(var idx = startIdx; idx <= endIdx && idx < contactArr.length; idx++)
+            {
+                var contact = makeContact(contactArr[idx].name);
+                contactContainer.innerHTML += contact;
+            }
+            document.getElementById("div_fullInfo").style.visibility = "hidden";
+        }
+        function showContactInfo(name)
+        {
+            var contact = contactArr[findContact(name)];
+            document.getElementById("info_name").innerHTML = contact.name;
+            document.getElementById("info_tel").innerHTML = contact.tel;
+            if (contact.email.length > 0)
+                document.getElementById("info_email").innerHTML = contact.email;
+            else
+                document.getElementById("info_email").innerHTML = "-";
+            if (contact.memo.length > 0)
+                document.getElementById("info_memo").innerHTML = contact.memo;
+            else
+                document.getElementById("info_memo").innerHTML = "-";
+            document.getElementById("div_fullInfo").style.visibility = "visible";
+
+            //document.getElementById("txt_name").value = contact.name;
+        }
+        function makeContact(name)
+        {
+            return "<div id='" + name + "' class='contactBox' onclick='showContactInfo(id)'>" + name + "</div>";
+        }
+        function makePages()
+        {
+            if (contactArr.length > 10)
+            {
+                var pageNav = document.getElementById("pageNav");
+                pageNav.style.visibility = "visible";
+                pageNav.innerHTML = "";
+                var nPage = Math.ceil(contactArr.length / 10);
+                for(var i =0; i < nPage; i++)
+                {
+                    if (i == curPage)
+                        pageNav.innerHTML += "<div class=\"active\" onclick=\"changePage(" + i +")\">" + (i + 1) + "</div>";
+                    else
+                        pageNav.innerHTML += "<div onclick=\"changePage(" + i +")\">" + (i + 1) + "</div>";
+                }
+            }
+            else
+            {
+                var pageNav = document.getElementById("pageNav");
+                pageNav.style.visibility = "hidden";
+                pageNav.innerHTML = "";
+            }
+        }
+        function changePage(pageNum)
+        {
+            curPage = pageNum;
+            makePages();
+            showContacts();
+        }
+        //function updateData()
+        //{
+        //    localStorage.removeItem("contacts");
+        //    localStorage.setItem("contacts", JSON.stringify(contactArr));
+        //}
+        function start()
+        {
+            makeAlert();
+            //var contacts = localStorage.getItem("contacts");
+            //if (contacts != null)
+            //{
+                //contactArr = JSON.parse(contacts);
+                makePages();
+                showContacts();
+            //}
+        }
+    </script>
+    </head>
+<body onload="start()">
+    <div id="maindiv">
+        <form name="form1" method="POST" action="Q2.php">
+            <label for="txt_name">이름:</label><input type="text" name="txt_name" id="txt_name"><br>
+            <label for="txt_tel">전화번호:</label><input type="text" name="txt_tel" id="txt_tel"></label><br>
+            <label for="txt_email">이메일:</label><input type="text" name="txt_email" id="txt_email"></label><br>
+            <label for="txt_memo">메모:</label><input type="text" name="txt_memo" id="txt_memo"></label><br>
+            <div id="div_btn">
+                <input type="button" name="addBtn" id="addBtn" value="연락처 추가" onclick="addContact()">
+                <input type="button" name="delBtn" id="delBtn" value="연락처 삭제" onclick="delContact()">
+                <input type="reset" name="ClearBtn" id="clearBtn" value="모두 삭제" onclick="clearAll()">
+            </div>
+            <!--submit 구분을 위한 hidden input 추가-->
+            <input type="hidden" name="mode" id="mode" value="insert"/>
+        </form>
+        <br>
+        <div id="contactContainer">
+        </div>
+        <nav class="pagination" id="pageNav">
+        </nav>
+    </div>
+    <div id="div_fullInfo">
+        <span id="info_name"></span>
+        <span id="info_tel"></span>
+        <span id="info_email"></span>
+        <span id="info_memo"></span>
+    </div>
 </body>
 </html>
